@@ -1,8 +1,10 @@
 import pandas as pd
+from psycopg2 import sql
 import psycopg2
 from pydantic import BaseModel
 import datetime
-
+from typing import Literal, Union
+# TODO: Figure out if there is even a point in cleaning the id's if we don't technically ever use them 
 # Data models for validation using Pydantic.
 # We struggled initially when invalid or missing fields slipped through,
 # so these catch schema errors early in parse_row().
@@ -248,6 +250,28 @@ def insert_data_to_tables(conn, df):
         conn.rollback()
     finally:
         cur.close()
+
+def single_lookup(lookup: Literal['products', 'users'], item_id: int, q: Union[str, None] = None):
+    conn = connect_db()
+    cur = conn.cursor()
+
+    # choose column name based on table
+    id_column = "product_id" if lookup == "products" else "user_id"
+
+    # safely compose SQL with psycopg2.sql
+    query = sql.SQL("SELECT * FROM {} WHERE {} = %s").format(
+        sql.Identifier(lookup),    # table name
+        sql.Identifier(id_column)  # column name
+    )
+
+    cur.execute(query, (item_id,))
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return {"item": result, "query": q}
+
 
 if __name__ == "__main__":
     conn = connect_db()
