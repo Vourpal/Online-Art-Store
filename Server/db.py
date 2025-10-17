@@ -262,6 +262,7 @@ def single_lookup(lookup: Literal['products', 'users'], item_id: int, q: Union[s
     query = sql.SQL("SELECT * FROM {} WHERE {} = %s").format(
         sql.Identifier(lookup),    # table name
         sql.Identifier(id_column)  # column name
+        # sql.Identifier is commonly used for making dynamic tabling with psycopg2
     )
 
     cur.execute(query, (item_id,))
