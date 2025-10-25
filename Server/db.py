@@ -267,11 +267,20 @@ def single_lookup(lookup: Literal['products', 'users'], item_id: int, q: Union[s
 
     cur.execute(query, (item_id,))
     result = cur.fetchone()
+    print(result)
+    product = Product(
+        product_name=result[1],
+        category=result[2],
+        quantity=result[3],
+        price=result[4]
+    )
+
+    print("here i am",product)
 
     cur.close()
     conn.close()
 
-    return {"item": result, "query": q}
+    return {"item": product, "query": q}
 
 
 if __name__ == "__main__":
